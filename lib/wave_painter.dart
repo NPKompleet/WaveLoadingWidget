@@ -8,17 +8,15 @@ class WavePainter extends CustomPainter {
   var amplitudeRatio = 0.1;
   Color waveColor;
   Color waveBGColor;
-  //var bgg= 0.6;
-  final double bgg;
+  final double fluidHeight;
+
   var waterLevelRatio;
   var mWaterLevelRatio = 1.0;
-  //var waveShiftRatio= 0.8;
   double waveShiftRatio;
   var progressValue = 20;
   var wavelengthRatio = 1.0;
   Size size;
 
-  //drawing
   ImageShader waveImgShader;
   Matrix4 shdMatrix;
   Float64List shdMatrixArray;
@@ -39,7 +37,7 @@ class WavePainter extends CustomPainter {
       this.waveColor,
       this.waveBGColor,
       this.waveShiftRatio,
-      this.bgg})
+      this.fluidHeight})
       : super(repaint: animation) {
     wavePaint = Paint()..isAntiAlias = true;
     waveBGPaint = Paint()
@@ -62,8 +60,9 @@ class WavePainter extends CustomPainter {
       fontFamily: 'Times New Roman',
       fontSize: 25.0,
     );
-
-    waterLevelRatio = 1.0 - bgg;
+    assert(fluidHeight <= 1.0, 'fluid height must be between 0 and 1');
+    assert(fluidHeight >= 0.0, 'fluid height must be between 0 and 1');
+    waterLevelRatio = 1.0 - fluidHeight;
   }
 
   @override
@@ -76,10 +75,8 @@ class WavePainter extends CustomPainter {
         (waterLevelRatio - mWaterLevelRatio) * size.height);
 
     shdMatrix.copyIntoArray(shdMatrixArray);
-    //print(waveImgShader);
-    if (waveImgShader == null) {
-      updateWaveShader();
-    }
+
+    drawWaveShader();
 
     wavePaint.shader = waveImgShader;
 
@@ -90,7 +87,7 @@ class WavePainter extends CustomPainter {
     canvas.drawCircle(Offset.zero, radius, borderPaint);
 
     textPainter.text = TextSpan(
-      text: '${(bgg*100).floor()}%',
+      text: '${(fluidHeight*100).floor()}%',
       style: textStyle,
     );
 
@@ -107,7 +104,8 @@ class WavePainter extends CustomPainter {
     return animation.value != oldDelegate.animation.value;
   }
 
-  void updateWaveShader() {
+  /// Draws the [ImageShader] that will be used to paint the wave
+  void drawWaveShader() {
     double width = size.width;
     double height = size.height;
 
@@ -124,13 +122,12 @@ class WavePainter extends CustomPainter {
       PictureRecorder recorder = new PictureRecorder();
       Canvas canvas = new Canvas(recorder, Offset.zero & size);
 
-      //draw wave
+      // Draw wave
       final double endX = width + 1;
       final double endY = height + 1;
 
       Float64List waveY = new Float64List(endX.floor());
       shaderWavePaint.color = waveColor.withOpacity(0.3);
-      //shaderWavePaint.color = waveColor;
 
       for (int beginX = 0; beginX < endX; beginX++) {
         double beginXPoint = beginX.toDouble();
@@ -145,7 +142,8 @@ class WavePainter extends CustomPainter {
       }
 
       shaderWavePaint.color = waveColor;
-      //shift the wave by a quarter of the width
+
+      // Draw another wave shifted by a quarter of the width
       final int wave2Shift = width ~/ 6;
       for (int beginX = 0; beginX < endX; beginX++) {
         double beginXPoint = beginX.toDouble();
@@ -159,13 +157,11 @@ class WavePainter extends CustomPainter {
 
       image = picture.toImage(width.floor(), height.floor());
 
-      //draw shader with image;
+      // Draw shader with image;
       waveImgShader =
           ImageShader(image, TileMode.repeated, TileMode.clamp, shdMatrixArray);
 
       image.dispose();
-    } else {
-      //print('nothing');
     }
   }
 }

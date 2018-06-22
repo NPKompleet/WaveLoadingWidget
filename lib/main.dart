@@ -28,20 +28,23 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text("wave"),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            AspectRatio(
-              aspectRatio: 1.0,
-              child: WaveLoadingWidget(
-                backgroundColor: Colors.green,
-                waveColor: Colors.red,
-              ),
-            )
-          ],
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: Center(
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              AspectRatio(
+                aspectRatio: 1.0,
+                child: WaveLoadingWidget(
+                  backgroundColor: Colors.green,
+                  waveColor: Colors.red,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

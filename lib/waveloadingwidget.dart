@@ -7,6 +7,7 @@ class WaveLoadingWidget extends StatefulWidget {
   final fluidHeight;
   final Color backgroundColor;
   final Color waveColor;
+
   WaveLoadingWidget(
       {this.fluidHeight = 0.5, this.backgroundColor, this.waveColor});
 
@@ -56,14 +57,13 @@ class _WaveLoadingWidgetState extends State<WaveLoadingWidget>
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        //color: Colors.amber,
         child: CustomPaint(
           painter: WavePainter(
               animation: waveAnimController,
               waveColor: widget.waveColor,
               waveBGColor: widget.backgroundColor,
               waveShiftRatio: waveAnimController.value,
-              bgg: heightAnimController.value),
+              fluidHeight: heightAnimController.value),
         ),
       ),
     );
@@ -90,7 +90,7 @@ class _WaveLoadingWidgetState extends State<WaveLoadingWidget>
     }
     _fluidHeight = newFluidHeight;
 
-    timer = new Timer(Duration(milliseconds: 9500), stopAnimation);
+    timer = Timer(Duration(milliseconds: 9500), stopAnimation);
     waveAnimController.repeat();
   }
 
