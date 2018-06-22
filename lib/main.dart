@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:waveloadingwidget/wave_painter.dart';
 import 'package:waveloadingwidget/waveloadingwidget.dart';
 
-void main() => runApp(new MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'Flutter Demo',
-      theme: new ThemeData(
-
+      theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -24,37 +22,28 @@ class MyHomePage extends StatelessWidget {
 
   final String title;
 
-
   @override
   Widget build(BuildContext context) {
-
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text("wave"),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("wave"),
       ),
-      body: new Center(
+      body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: new Column(
-
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-
-            new AspectRatio(
+            AspectRatio(
               aspectRatio: 1.0,
-              child: new WaveLoadingWidget(),
+              child: WaveLoadingWidget(
+                backgroundColor: Colors.green,
+                waveColor: Colors.red,
+              ),
             )
-
           ],
         ),
       ),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: null,
-        tooltip: '',
-        child: new Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
-
 }
-

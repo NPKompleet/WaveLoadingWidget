@@ -5,8 +5,10 @@ import 'package:waveloadingwidget/wave_painter.dart';
 
 class WaveLoadingWidget extends StatefulWidget {
   final fluidHeight;
-  WaveLoadingWidget({this.fluidHeight=0.5});
-
+  final Color backgroundColor;
+  final Color waveColor;
+  WaveLoadingWidget(
+      {this.fluidHeight = 0.5, this.backgroundColor, this.waveColor});
 
   @override
   _WaveLoadingWidgetState createState() => new _WaveLoadingWidgetState();
@@ -23,21 +25,19 @@ class _WaveLoadingWidgetState extends State<WaveLoadingWidget>
   @override
   void initState() {
     super.initState();
-    _fluidHeight= widget.fluidHeight;
-    timer = new Timer(const Duration(milliseconds: 9500), stopAnimation);
+    _fluidHeight = widget.fluidHeight;
+    timer = Timer(const Duration(milliseconds: 9500), stopAnimation);
 
-    waveAnimController = new AnimationController(
+    waveAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
+      duration: Duration(seconds: 1),
     );
 
-    heightAnimController = new AnimationController(
+    heightAnimController = AnimationController(
       upperBound: _fluidHeight,
       vsync: this,
-      duration: const Duration(seconds: 1),
+      duration: Duration(seconds: 1),
     );
-
-
 
     heightAnimController.forward();
     waveAnimController.repeat();
@@ -45,27 +45,27 @@ class _WaveLoadingWidgetState extends State<WaveLoadingWidget>
 
   @override
   Widget build(BuildContext context) {
-    return new AnimatedBuilder(
+    return AnimatedBuilder(
       animation: waveAnimController,
       builder: _buildAnim,
     );
   }
 
   Widget _buildAnim(BuildContext context, Widget child) {
-    return new GestureDetector(
+    return GestureDetector(
       onTap: onTap,
-      child: new Container(
-      width: double.INFINITY,
-      //color: Colors.amber,
-      child: new CustomPaint(
-        painter: new WavePainter(
-            animation: waveAnimController,
-            waveColor: Colors.red,
-            waveBGColor: Colors.green,
-            waveShiftRatio: waveAnimController.value,
-            bgg: heightAnimController.value),
+      child: Container(
+        width: double.infinity,
+        //color: Colors.amber,
+        child: CustomPaint(
+          painter: WavePainter(
+              animation: waveAnimController,
+              waveColor: widget.waveColor,
+              waveBGColor: widget.backgroundColor,
+              waveShiftRatio: waveAnimController.value,
+              bgg: heightAnimController.value),
+        ),
       ),
-    ),
     );
   }
 
@@ -80,33 +80,30 @@ class _WaveLoadingWidgetState extends State<WaveLoadingWidget>
     waveAnimController.stop();
   }
 
-  void setFluidHeight(double newFluidHeight){
-    if (_fluidHeight > newFluidHeight){
+  void setFluidHeight(double newFluidHeight) {
+    if (_fluidHeight > newFluidHeight) {
       setupControllerBounds(newFluidHeight, _fluidHeight);
       heightAnimController.reverse(from: _fluidHeight);
-    }else{
+    } else {
       setupControllerBounds(_fluidHeight, newFluidHeight);
       heightAnimController.forward(from: _fluidHeight);
     }
-    _fluidHeight= newFluidHeight;
+    _fluidHeight = newFluidHeight;
 
-    timer = new Timer(const Duration(milliseconds: 9500), stopAnimation);
+    timer = new Timer(Duration(milliseconds: 9500), stopAnimation);
     waveAnimController.repeat();
   }
 
-  void setupControllerBounds(lower, upper){
-    heightAnimController = new AnimationController(
+  void setupControllerBounds(lower, upper) {
+    heightAnimController = AnimationController(
       lowerBound: lower,
       upperBound: upper,
       vsync: this,
-      duration: const Duration(seconds: 1),
+      duration: Duration(seconds: 1),
     );
   }
 
-  void onTap(){
-    _fluidHeight>=0.5? setFluidHeight(0.4): setFluidHeight(0.7);
+  void onTap() {
+    _fluidHeight >= 0.5 ? setFluidHeight(0.4) : setFluidHeight(0.7);
   }
-
-
-
 }

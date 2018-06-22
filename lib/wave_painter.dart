@@ -1,6 +1,6 @@
 import 'dart:math';
-import 'dart:ui';
 import 'dart:typed_data';
+import 'dart:ui' hide TextStyle;
 
 import 'package:flutter/material.dart' hide Image;
 
@@ -20,7 +20,6 @@ class WavePainter extends CustomPainter {
 
   //drawing
   ImageShader waveImgShader;
-  static ImageShader waveImgShader2;
   Matrix4 shdMatrix;
   Float64List shdMatrixArray;
 
@@ -32,8 +31,8 @@ class WavePainter extends CustomPainter {
 
   Animation<double> animation;
 
-  final TextPainter textPainter;
-  final TextStyle textStyle;
+  TextPainter textPainter;
+  TextStyle textStyle;
 
   WavePainter(
       {this.animation,
@@ -41,31 +40,28 @@ class WavePainter extends CustomPainter {
       this.waveBGColor,
       this.waveShiftRatio,
       this.bgg})
-      : wavePaint = new Paint(),
-        waveBGPaint = new Paint(),
-        borderPaint = new Paint(),
-        shdMatrix = new Matrix4.identity(),
-        shdMatrixArray = new Float64List(16),
-        textPainter = new TextPainter(
-          textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
-        ),
-        textStyle = const TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.w500,
-          fontFamily: 'Times New Roman',
-          fontSize: 25.0,
-        ),
-        super(repaint: animation) {
-    wavePaint.isAntiAlias = true;
-
-    waveBGPaint.color = waveBGColor;
-    waveBGPaint.style = PaintingStyle.fill;
-
-    borderPaint.color = waveColor;
-    borderPaint.isAntiAlias = true;
-    borderPaint.style = PaintingStyle.stroke;
-    borderPaint.strokeWidth = 1.5;
+      : super(repaint: animation) {
+    wavePaint = Paint()..isAntiAlias = true;
+    waveBGPaint = Paint()
+      ..color = waveBGColor
+      ..style = PaintingStyle.fill;
+    borderPaint = Paint()
+      ..color = waveColor
+      ..isAntiAlias = true
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    shdMatrix = Matrix4.identity();
+    shdMatrixArray = Float64List(16);
+    textPainter = TextPainter(
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.rtl,
+    );
+    textStyle = const TextStyle(
+      color: Colors.black,
+      fontWeight: FontWeight.w500,
+      fontFamily: 'Times New Roman',
+      fontSize: 25.0,
+    );
 
     waterLevelRatio = 1.0 - bgg;
   }
@@ -74,7 +70,6 @@ class WavePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     this.size = size;
     final radius = size.width / 2;
-
 
     shdMatrix.scale(1.0, 0.5);
     shdMatrix.translate(waveShiftRatio * size.width,
@@ -86,10 +81,7 @@ class WavePainter extends CustomPainter {
       updateWaveShader();
     }
 
-    //new
-    //print(waveShiftRatio);
     wavePaint.shader = waveImgShader;
-
 
     canvas.save();
     canvas.translate(radius, radius);
@@ -97,15 +89,15 @@ class WavePainter extends CustomPainter {
     canvas.drawCircle(Offset.zero, radius, wavePaint);
     canvas.drawCircle(Offset.zero, radius, borderPaint);
 
-    textPainter.text = new TextSpan(
+    textPainter.text = TextSpan(
       text: '${(bgg*100).floor()}%',
       style: textStyle,
     );
 
     textPainter.layout();
 
-    textPainter.paint(canvas,
-        new Offset(-(textPainter.width / 2), -(textPainter.height / 2)));
+    textPainter.paint(
+        canvas, Offset(-(textPainter.width / 2), -(textPainter.height / 2)));
 
     canvas.restore();
   }
@@ -121,15 +113,13 @@ class WavePainter extends CustomPainter {
 
     if (width > 0 && height > 0) {
       // ω=2π/T, where T= period
-      var angularFrequency = 2 * PI / (wavelengthRatio * width);
+      var angularFrequency = 2 * pi / (wavelengthRatio * width);
       var amplitude = amplitudeRatio * height;
       var waterLevel = waterLevelRatio * height;
 
       Paint shaderWavePaint = new Paint()
         ..strokeWidth = 2.0
         ..isAntiAlias = true;
-
-      //print(shaderWavePaint.strokeWidth);
 
       PictureRecorder recorder = new PictureRecorder();
       Canvas canvas = new Canvas(recorder, Offset.zero & size);
@@ -149,8 +139,8 @@ class WavePainter extends CustomPainter {
         // y=Asin(ωx+φ)+h
         double beginY = (amplitude * sin(wx)) + waterLevel;
 
-        canvas.drawLine(new Offset(beginXPoint, beginY),
-            new Offset(beginXPoint, endY), shaderWavePaint);
+        canvas.drawLine(Offset(beginXPoint, beginY), Offset(beginXPoint, endY),
+            shaderWavePaint);
         waveY[beginX] = beginY;
       }
 
@@ -160,22 +150,18 @@ class WavePainter extends CustomPainter {
       for (int beginX = 0; beginX < endX; beginX++) {
         double beginXPoint = beginX.toDouble();
         canvas.drawLine(
-            new Offset(
-                beginXPoint, waveY[(beginX + wave2Shift) % endX.floor()]),
-            new Offset(beginXPoint, endY),
+            Offset(beginXPoint, waveY[(beginX + wave2Shift) % endX.floor()]),
+            Offset(beginXPoint, endY),
             shaderWavePaint);
       }
 
       Picture picture = recorder.endRecording();
 
       image = picture.toImage(width.floor(), height.floor());
-      /*print('size is $size');
-      print('image is $image');
-      print(-1.0 * waterLevelRatio * size.height);*/
 
       //draw shader with image;
-      waveImgShader = new ImageShader(
-          image, TileMode.repeated, TileMode.clamp, shdMatrixArray);
+      waveImgShader =
+          ImageShader(image, TileMode.repeated, TileMode.clamp, shdMatrixArray);
 
       image.dispose();
     } else {
