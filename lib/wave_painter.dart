@@ -7,13 +7,11 @@ import 'package:flutter/material.dart' hide Image;
 class WavePainter extends CustomPainter {
   var amplitudeRatio = 0.1;
   Color waveColor;
-  Color waveBGColor;
+  Color waveBackgroundColor;
   final double fluidHeight;
 
   var waterLevelRatio;
-  var mWaterLevelRatio = 1.0;
   double waveShiftRatio;
-  var progressValue = 20;
   var wavelengthRatio = 1.0;
   Size size;
 
@@ -23,7 +21,7 @@ class WavePainter extends CustomPainter {
 
   Image image;
 
-  Paint waveBGPaint;
+  Paint waveBackgroundPaint;
   Paint wavePaint;
   Paint borderPaint;
 
@@ -35,13 +33,13 @@ class WavePainter extends CustomPainter {
   WavePainter(
       {this.animation,
       this.waveColor,
-      this.waveBGColor,
+      this.waveBackgroundColor,
       this.waveShiftRatio,
       this.fluidHeight})
       : super(repaint: animation) {
     wavePaint = Paint()..isAntiAlias = true;
-    waveBGPaint = Paint()
-      ..color = waveBGColor
+    waveBackgroundPaint = Paint()
+      ..color = waveBackgroundColor
       ..style = PaintingStyle.fill;
     borderPaint = Paint()
       ..color = waveColor
@@ -71,8 +69,8 @@ class WavePainter extends CustomPainter {
     final radius = size.width / 2;
 
     shdMatrix.scale(1.0, 0.5);
-    shdMatrix.translate(waveShiftRatio * size.width,
-        (waterLevelRatio - mWaterLevelRatio) * size.height);
+    shdMatrix.translate(
+        waveShiftRatio * size.width, -fluidHeight * size.height);
 
     shdMatrix.copyIntoArray(shdMatrixArray);
 
@@ -82,7 +80,7 @@ class WavePainter extends CustomPainter {
 
     canvas.save();
     canvas.translate(radius, radius);
-    canvas.drawCircle(Offset.zero, radius, waveBGPaint);
+    canvas.drawCircle(Offset.zero, radius, waveBackgroundPaint);
     canvas.drawCircle(Offset.zero, radius, wavePaint);
     canvas.drawCircle(Offset.zero, radius, borderPaint);
 
@@ -110,7 +108,7 @@ class WavePainter extends CustomPainter {
     double height = size.height;
 
     if (width > 0 && height > 0) {
-      // ω=2π/T, where T= period
+      // ω=2π/T, where T is period,  ω is the angular frequency
       var angularFrequency = 2 * pi / (wavelengthRatio * width);
       var amplitude = amplitudeRatio * height;
       var waterLevel = waterLevelRatio * height;
@@ -133,7 +131,7 @@ class WavePainter extends CustomPainter {
         double beginXPoint = beginX.toDouble();
         double wx = beginX * angularFrequency;
 
-        // y=Asin(ωx+φ)+h
+        // y=A*sinωx+h, where the A is amplitude of the wave
         double beginY = (amplitude * sin(wx)) + waterLevel;
 
         canvas.drawLine(Offset(beginXPoint, beginY), Offset(beginXPoint, endY),
@@ -143,7 +141,8 @@ class WavePainter extends CustomPainter {
 
       shaderWavePaint.color = waveColor;
 
-      // Draw another wave shifted by a quarter of the width
+      // Draw another wave shifted by a sixth of the width
+      // y=A*sin(ωx+φ)+h, φ is the phase shift of the wave
       final int wave2Shift = width ~/ 6;
       for (int beginX = 0; beginX < endX; beginX++) {
         double beginXPoint = beginX.toDouble();

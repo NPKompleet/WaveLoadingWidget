@@ -61,7 +61,7 @@ class _WaveLoadingWidgetState extends State<WaveLoadingWidget>
           painter: WavePainter(
               animation: waveAnimController,
               waveColor: widget.waveColor,
-              waveBGColor: widget.backgroundColor,
+              waveBackgroundColor: widget.backgroundColor,
               waveShiftRatio: waveAnimController.value,
               fluidHeight: heightAnimController.value),
         ),
