@@ -10,7 +10,7 @@ class WavePainter extends CustomPainter {
   Color waveBackgroundColor;
   final double fluidHeight;
 
-  var waterLevelRatio;
+  var emptyLevelRatio;
   double waveShiftRatio;
   var wavelengthRatio = 1.0;
   Size size;
@@ -18,8 +18,6 @@ class WavePainter extends CustomPainter {
   ImageShader waveImgShader;
   Matrix4 shdMatrix;
   Float64List shdMatrixArray;
-
-  Image image;
 
   Paint waveBackgroundPaint;
   Paint wavePaint;
@@ -60,7 +58,7 @@ class WavePainter extends CustomPainter {
     );
     assert(fluidHeight <= 1.0, 'fluid height must be between 0 and 1');
     assert(fluidHeight >= 0.0, 'fluid height must be between 0 and 1');
-    waterLevelRatio = 1.0 - fluidHeight;
+    emptyLevelRatio = 1.0 - fluidHeight;
   }
 
   @override
@@ -107,54 +105,66 @@ class WavePainter extends CustomPainter {
     double width = size.width;
     double height = size.height;
 
+    Path path = Path();
+
     if (width > 0 && height > 0) {
       // ω=2π/T, where T is period,  ω is the angular frequency
       var angularFrequency = 2 * pi / (wavelengthRatio * width);
       var amplitude = amplitudeRatio * height;
-      var waterLevel = waterLevelRatio * height;
+      var emptyLevel = emptyLevelRatio * height;
 
-      Paint shaderWavePaint = new Paint()
-        ..strokeWidth = 2.0
+      Paint shaderWavePaint = Paint()
+        ..style = PaintingStyle.fill
         ..isAntiAlias = true;
 
-      PictureRecorder recorder = new PictureRecorder();
-      Canvas canvas = new Canvas(recorder, Offset.zero & size);
+      PictureRecorder recorder = PictureRecorder();
+      Canvas canvas = Canvas(recorder, Offset.zero & size);
 
       // Draw wave
-      final double endX = width + 1;
-      final double endY = height + 1;
+      final double xEndPoint = width + 1;
+      final double yEndPoint = height + 1;
 
-      Float64List waveY = new Float64List(endX.floor());
-      shaderWavePaint.color = waveColor.withOpacity(0.3);
+      Float64List waveY = Float64List(xEndPoint.floor());
+      shaderWavePaint.color = waveColor.withOpacity(0.5);
 
-      for (int beginX = 0; beginX < endX; beginX++) {
-        double beginXPoint = beginX.toDouble();
-        double wx = beginX * angularFrequency;
+      path.moveTo(xEndPoint, yEndPoint);
+      path.lineTo(0.0, yEndPoint);
+
+      for (int xPoint = 0; xPoint < xEndPoint; xPoint++) {
+        double xAxisPoint = xPoint.toDouble();
+        double wx = xPoint * angularFrequency;
 
         // y=A*sinωx+h, where the A is amplitude of the wave
-        double beginY = (amplitude * sin(wx)) + waterLevel;
-
-        canvas.drawLine(Offset(beginXPoint, beginY), Offset(beginXPoint, endY),
-            shaderWavePaint);
-        waveY[beginX] = beginY;
+        double yAxisPoint = (amplitude * sin(wx)) + emptyLevel;
+        waveY[xPoint] = yAxisPoint;
+        path.lineTo(xAxisPoint, yAxisPoint);
       }
+
+      path.close();
+      canvas.drawPath(path, shaderWavePaint);
 
       shaderWavePaint.color = waveColor;
 
       // Draw another wave shifted by a sixth of the width
       // y=A*sin(ωx+φ)+h, φ is the phase shift of the wave
-      final int wave2Shift = width ~/ 6;
-      for (int beginX = 0; beginX < endX; beginX++) {
-        double beginXPoint = beginX.toDouble();
-        canvas.drawLine(
-            Offset(beginXPoint, waveY[(beginX + wave2Shift) % endX.floor()]),
-            Offset(beginXPoint, endY),
-            shaderWavePaint);
+      final int waveShift = width ~/ 6;
+
+      path = Path();
+      path.moveTo(xEndPoint, yEndPoint);
+      path.lineTo(0.0, yEndPoint);
+
+      for (int xPoint = 0; xPoint < xEndPoint; xPoint++) {
+        double xAxisPoint = xPoint.toDouble();
+        path.lineTo(
+            xAxisPoint, waveY[(xPoint + waveShift) % xEndPoint.floor()]);
       }
+
+      path.close();
+      canvas.drawPath(path, shaderWavePaint);
 
       Picture picture = recorder.endRecording();
 
-      image = picture.toImage(width.floor(), height.floor());
+      Image image = picture.toImage(width.floor(), height.floor());
 
       // Draw shader with image;
       waveImgShader =
@@ -164,3 +174,5 @@ class WavePainter extends CustomPainter {
     }
   }
 }
+
+enum WaveWidgetShape { rectangle, circle }
